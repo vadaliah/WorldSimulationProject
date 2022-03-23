@@ -1,0 +1,4 @@
+﻿TemplateName,Action,IN_R1_Population,IN_R2_MetallicElement,IN_R3_Timber,IN_R21_MetallicAlloys,IN_R22_Electronics,IN_R23_Housing,IN_R21_MetallicAlloysWaste,IN_R22_ElectronicsWaste,IN_R23_HousingWaste,IN_R24_Farm,IN_R24_FarmWaste,IN_R25_AvailableLand,IN_R26_Water,OUT_R1_Population,OUT_R2_MetallicElement,OUT_R3_Timber,OUT_R21_MetallicAlloys,OUT_R22_Electronics,OUT_R23_Housing,OUT_R21_MetallicAlloysWaste,OUT_R22_ElectronicsWaste,OUT_R23_HousingWaste,OUT_R24_Farm,OUT_R24_FarmWaste,OUT_R25_AvailableLand,OUT_R26_Water
+HousingTransform,Transform,5,1,5,3,0,0,0,0,0,0,0,0,0,5,0,0,0,0,1,0,0,1,0,0,0,0
+AlloysTransform,Transform,1,2,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0
+ElectronicsTransform,Transform,1,3,0,2,0,0,0,0,0,0,0,0,0,1,0,0,0,2,0,0,1,0,0,0,0,0

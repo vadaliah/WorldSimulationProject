@@ -1,0 +1,14 @@
+﻿Resource,Weight,Type
+R1_Population,0,resource
+R2_MetallicElement,0,resource
+R3_Timber,0,resource
+R21_MetallicAlloys,0.2,resource
+R22_Electronics,0.5,resource
+R23_Housing,0.8,resource
+R21_MetallicAlloysWaste,0.5,waste
+R22_ElectronicsWaste,0.8,waste
+R23_HousingWaste,0.4,waste
+R24_Farm,0.7,resource
+R24_FarmWaste,0.2,waste
+R25_AvailableLand,0.8,resource
+R26_Water,0.9,resource
