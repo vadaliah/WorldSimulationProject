@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="Docutils 0.17.1: http://docutils.sourceforge.net/" name="generator"/>
+
+    <title>WorldSimulation module &#8212; CS5260ProjPart1 documentation</title>
+    <link href="_static/pygments.css" rel="stylesheet" type="text/css"/>
+    <link href="_static/alabaster.css" rel="stylesheet" type="text/css"/>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link href="genindex.html" rel="index" title="Index"/>
+    <link href="search.html" rel="search" title="Search"/>
+    <link href="index.html" rel="prev" title="Welcome to CS5260ProjPart1’s documentation!"/>
+
+    <link href="_static/custom.css" rel="stylesheet" type="text/css"/>
+
+
+    <meta content="width=device-width, initial-scale=0.9, maximum-scale=0.9" name="viewport"/>
+
+</head>
+<body>
+
+
+<div class="document">
+    <div class="documentwrapper">
+        <div class="bodywrapper">
+
+
+            <div class="body" role="main">
+
+                <section id="module-WorldSimulation">
+                    <span id="worldsimulation-module"></span>
+                    <h1>WorldSimulation module<a class="headerlink" href="#module-WorldSimulation"
+                                                 title="Permalink to this headline">¶</a></h1>
+                    <dl class="py class">
+                        <dt class="sig sig-object py" id="WorldSimulation.Action">
+                            <em class="property"><span class="pre">class</span><span class="w"> </span></em><span
+                                class="sig-prename descclassname"><span class="pre">WorldSimulation.</span></span><span
+                                class="sig-name descname"><span class="pre">Action</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">templatename</span></span></em>, <em
+                                class="sig-param"><span class="n"><span class="pre">action</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#Action"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.Action"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>
+                        </p>
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Action.add_input_resource">
+                                    <span class="sig-name descname"><span
+                                            class="pre">add_input_resource</span></span><span class="sig-paren">(</span><em
+                                        class="sig-param"><span class="n"><span
+                                        class="pre">resource</span></span></em><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Action.add_input_resource"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Action.add_input_resource"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd></dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Action.add_output_resource">
+                                    <span class="sig-name descname"><span
+                                            class="pre">add_output_resource</span></span><span
+                                        class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                                        class="pre">resource</span></span></em><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Action.add_output_resource"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Action.add_output_resource"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd></dd>
+                            </dl>
+
+                        </dd>
+                    </dl>
+
+                    <dl class="py class">
+                        <dt class="sig sig-object py" id="WorldSimulation.Node">
+                            <em class="property"><span class="pre">class</span><span class="w"> </span></em><span
+                                class="sig-prename descclassname"><span class="pre">WorldSimulation.</span></span><span
+                                class="sig-name descname"><span class="pre">Node</span></span><span
+                                class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                                class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span
+                                class="pre">world</span></span></em><span class="sig-paren">)</span><a
+                                class="reference internal" href="_modules/WorldSimulation.html#Node"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.Node"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>
+                        </p>
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.calculate_discounted_reward">
+                                    <span class="sig-name descname"><span class="pre">calculate_discounted_reward</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.calculate_discounted_reward"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.calculate_discounted_reward"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p>Calculate discounted_reward using following equation:
+                                    # DR(c_i, s_j) = gamma^N * (Q_end(c_i, s_j) – Q_start(c_i, s_j)), where 0 &lt;=
+                                    gamma &lt; 1.
+                                    :return: (Gamma ** count) * node.calculate_undiscounted_reward()</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.calculate_expected_utility">
+                                    <span class="sig-name descname"><span class="pre">calculate_expected_utility</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.calculate_expected_utility"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.calculate_expected_utility"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd>
+                                    <blockquote>
+                                        <div><p># calculate_expected_utility function implements the following:</p>
+                                        </div>
+                                    </blockquote>
+                                    <p># EU(c_i, s_j) = (P(s_j) * DR(c_i, s_j)) + ((1-P(s_j)) * C), where c_i = self
+                                        :return:</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.calculate_schedule_probability">
+                                    <span class="sig-name descname"><span
+                                            class="pre">calculate_schedule_probability</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.calculate_schedule_probability"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.calculate_schedule_probability"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd>
+                                    <dl class="field-list simple">
+                                        <dt class="field-odd">Returns</dt>
+                                        <dd class="field-odd"><p>Schedule Probability sco:L / 1 + math.e ** (-K * (x -
+                                            X_0))</p>
+                                        </dd>
+                                    </dl>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.calculate_state_quality">
+                                    <span class="sig-name descname"><span
+                                            class="pre">calculate_state_quality</span></span><span
+                                        class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                                        class="pre">resourceweights</span></span></em><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.calculate_state_quality"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.calculate_state_quality"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p># Function to calculate Node State Quality
+                                    :param
+                                    Input: Node object
+                                    Input: resourceweights: Map object containing Resource Weight definition
+                                    # Part1 State quality function uses static Weights associated per resource type
+                                    # For Part , intend to enhance weights using country specific methodology</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.calculate_undiscounted_reward">
+                                    <span class="sig-name descname"><span
+                                            class="pre">calculate_undiscounted_reward</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.calculate_undiscounted_reward"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.calculate_undiscounted_reward"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p># From the requirements, this function implements the following equation:
+                                    # R(c_i, s_j) = Q_end(c_i, s_j) – Q_start(c_i, s_j) to a country c_i of a schedule
+                                    s_j.
+                                    :param :
+                                    :return: state_quality(node) - state_quality(start)</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.generate_successor">
+                                    <span class="sig-name descname"><span
+                                            class="pre">generate_successor</span></span><span class="sig-paren">(</span><em
+                                        class="sig-param"><span class="n"><span class="pre">frontier</span></span></em>,
+                                    <em class="sig-param"><span class="n"><span class="pre">schedule_queue</span></span></em>,
+                                    <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>,
+                                    <em class="sig-param"><span class="n"><span
+                                            class="pre">actions</span></span></em><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.generate_successor"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.generate_successor"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p>Function that generates applies Action on Each Countries within Node.World to
+                                    generate Successor Nodes</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.get_children_count">
+                                    <span class="sig-name descname"><span
+                                            class="pre">get_children_count</span></span><span class="sig-paren">(</span><span
+                                        class="sig-paren">)</span><a class="reference internal"
+                                                                     href="_modules/WorldSimulation.html#Node.get_children_count"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.get_children_count"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd></dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.get_first_child">
+                                    <span class="sig-name descname"><span class="pre">get_first_child</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.get_first_child"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.get_first_child"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd>
+                                    <dl class="field-list simple">
+                                        <dt class="field-odd">Returns</dt>
+                                        <dd class="field-odd"><p>Return First Child with max state_quality</p>
+                                        </dd>
+                                    </dl>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.get_probability_score">
+                                    <span class="sig-name descname"><span
+                                            class="pre">get_probability_score</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.get_probability_score"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.get_probability_score"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p>Probablity_score Getter
+                                    :return: node.score</p>
+                                </dd>
+                            </dl>
+
+                            <dl class="py method">
+                                <dt class="sig sig-object py" id="WorldSimulation.Node.get_state_quality">
+                                    <span class="sig-name descname"><span
+                                            class="pre">get_state_quality</span></span><span
+                                        class="sig-paren">(</span><span class="sig-paren">)</span><a
+                                        class="reference internal"
+                                        href="_modules/WorldSimulation.html#Node.get_state_quality"><span
+                                        class="viewcode-link"><span class="pre">[source]</span></span></a><a
+                                        class="headerlink" href="#WorldSimulation.Node.get_state_quality"
+                                        title="Permalink to this definition">¶</a></dt>
+                                <dd><p>state_quality Getter
+                                    :return: node.state_quality</p>
+                                </dd>
+                            </dl>
+
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.apply_template">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">apply_template</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">country</span></span></em>, <em
+                                class="sig-param"><span class="n"><span class="pre">action</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#apply_template"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.apply_template"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Function to apply action template on a country object
+                            Country Resources are reduced as per Template Input Resource definition
+                            Country Resources are added as per Template Out Resource defination
+                            Additional Country Resources are created for non existing Template Out resources
+                            :param country:
+                            :param action:
+                            :return:</p>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.calculate_schedule_probability">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">calculate_schedule_probability</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">node</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#calculate_schedule_probability"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.calculate_schedule_probability"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd></dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.load_initial_state">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">load_initial_state</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span
+                                class="pre">country_resource_filename</span></span></em><span class="sig-paren">)</span><a
+                                class="reference internal" href="_modules/WorldSimulation.html#load_initial_state"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.load_initial_state"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Function to load initial World Resource state from an input CSV file
+                            Panda dataframe is used to read CSV file for creating Country objects
+                            :param country_resource_filename:
+                            :return:</p>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.load_resource_weights">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">load_resource_weights</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">resource_filename</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#load_resource_weights"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.load_resource_weights"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Function to populate resourceweights map of Resource Weights from an input CSV file
+                            :param resource_filename:
+                            :return:</p>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.load_templates">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">load_templates</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">template_filename</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#load_templates"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.load_templates"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd>
+                            <blockquote>
+                                <div><p>Function to populate actions list of Action Templates from an input CSV file
+                                    Actions object consists of Action[Transform/Transfer], TemplateName, Input Resources
+                                    : Resources required as Inputs
+                                    and Output Resources: Resources generated as a Byproduct
+                                    Panda DataFrame is used to Read CSV file and populate Action dictionary object</p>
+                                </div>
+                            </blockquote>
+                            <dl class="field-list simple">
+                                <dt class="field-odd">Parameters</dt>
+                                <dd class="field-odd"><p><strong>template_filename</strong> – </p>
+                                </dd>
+                                <dt class="field-even">Returns</dt>
+                                <dd class="field-even"><p></p>
+                                </dd>
+                            </dl>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.main">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">main</span></span><span class="sig-paren">(</span><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#main"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.main"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd></dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.my_country_scheduler">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">my_country_scheduler</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">my_country_name</span></span></em>,
+                            <em class="sig-param"><span class="n"><span
+                                    class="pre">resource_weight_filename</span></span></em>, <em class="sig-param"><span
+                                class="n"><span class="pre">country_resources_filename</span></span></em>, <em
+                                class="sig-param"><span class="n"><span
+                                class="pre">action_template_filename</span></span></em>, <em class="sig-param"><span
+                                class="n"><span class="pre">output_schedule_filename</span></span></em>, <em
+                                class="sig-param"><span class="n"><span
+                                class="pre">num_output_schedules</span></span></em>, <em class="sig-param"><span
+                                class="n"><span class="pre">depth_bound</span></span></em>, <em class="sig-param"><span
+                                class="n"><span class="pre">frontier_max_size</span></span></em><span class="sig-paren">)</span><a
+                                class="reference internal"
+                                href="_modules/WorldSimulation.html#my_country_scheduler"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.my_country_scheduler"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>u
+                            :param my_country_name: My Country
+                            :param resource_weight_filename: Input CSV file for Resource Weights
+                            :param country_resources_filename: Input CSV File for World Countries Resource definition
+                            :param action_template_filename: Input CVS file for Templates
+                            :param output_schedule_filename: Output CSV file for generated Schedules
+                            :param num_output_schedules: Threshold for Output_schedules
+                            :param depth_bound: Threshold for Schedule Depth
+                            :param frontier_max_size: Threshold for Frontier size
+                            :return:</p>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.print_schedule">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">print_schedule</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">schedulequeue</span></span></em>,
+                            <em class="sig-param"><span class="n"><span
+                                    class="pre">output_schedule_filename</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#print_schedule"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.print_schedule"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd><p>Function to print Schedules to an output file
+                            :param schedulequeue:
+                            :param output_schedule_filename:
+                            :return:</p>
+                        </dd>
+                    </dl>
+
+                    <dl class="py function">
+                        <dt class="sig sig-object py" id="WorldSimulation.verify_required_resources">
+                            <span class="sig-prename descclassname"><span
+                                    class="pre">WorldSimulation.</span></span><span class="sig-name descname"><span
+                                class="pre">verify_required_resources</span></span><span class="sig-paren">(</span><em
+                                class="sig-param"><span class="n"><span class="pre">country</span></span></em>, <em
+                                class="sig-param"><span class="n"><span class="pre">action</span></span></em><span
+                                class="sig-paren">)</span><a class="reference internal"
+                                                             href="_modules/WorldSimulation.html#verify_required_resources"><span
+                                class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                                                                                                     href="#WorldSimulation.verify_required_resources"
+                                                                                                     title="Permalink to this definition">¶</a>
+                        </dt>
+                        <dd></dd>
+                    </dl>
+
+                </section>
+
+
+            </div>
+
+        </div>
+    </div>
+    <div aria-label="main navigation" class="sphinxsidebar" role="navigation">
+        <div class="sphinxsidebarwrapper">
+            <h1 class="logo"><a href="index.html">CS5260ProjPart1</a></h1>
+
+
+            <h3>Navigation</h3>
+            <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+            <ul class="current">
+                <li class="toctree-l1 current"><a class="current reference internal" href="#">WorldSimulation module</a>
+                </li>
+            </ul>
+
+            <div class="relations">
+                <h3>Related Topics</h3>
+                <ul>
+                    <li><a href="index.html">Documentation overview</a>
+                        <ul>
+                            <li>Previous: <a href="index.html" title="previous chapter">Welcome to CS5260ProjPart1’s
+                                documentation!</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div id="searchbox" role="search" style="display: none">
+                <h3 id="searchlabel">Quick search</h3>
+                <div class="searchformwrapper">
+                    <form action="search.html" class="search" method="get">
+                        <input aria-labelledby="searchlabel" autocapitalize="off" autocomplete="off" autocorrect="off"
+                               name="q" spellcheck="false" type="text"/>
+                        <input type="submit" value="Go"/>
+                    </form>
+                </div>
+            </div>
+            <script>$('#searchbox').show(0);</script>
+
+
+        </div>
+    </div>
+    <div class="clearer"></div>
+</div>
+<div class="footer">
+    &copy;2022, Hiren Vadalia.
+
+    |
+    Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+    &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+
+    |
+    <a href="_sources/WorldSimulation.rst.txt"
+       rel="nofollow">Page source</a>
+</div>
+
+
+</body>
+</html>

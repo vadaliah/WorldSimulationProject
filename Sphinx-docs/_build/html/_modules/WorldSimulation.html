@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>WorldSimulation &#8212; CS5260ProjPart1 documentation</title>
+    <link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+    <link href="../_static/alabaster.css" rel="stylesheet" type="text/css"/>
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link href="../genindex.html" rel="index" title="Index"/>
+    <link href="../search.html" rel="search" title="Search"/>
+
+    <link href="../_static/custom.css" rel="stylesheet" type="text/css"/>
+
+
+    <meta content="width=device-width, initial-scale=0.9, maximum-scale=0.9" name="viewport"/>
+
+</head>
+<body>
+
+
+<div class="document">
+    <div class="documentwrapper">
+        <div class="bodywrapper">
+
+
+            <div class="body" role="main">
+
+                <h1>Source code for WorldSimulation</h1>
+                <div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span
+                        class="n">PriorityQueue</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="n">resourceweights</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1"># Calculation constants</span>
+<span class="n">Gamma</span> <span class="o">=</span> <span class="mf">0.95</span>
+<span class="n">C</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+<span class="n">K</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">X_0</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="Action"><a class="viewcode-back" href="../WorldSimulation.html#WorldSimulation.Action">[docs]</a><span
+        class="k">class</span> <span class="nc">Action</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span
+            class="p">,</span> <span class="n">templatename</span><span class="p">,</span> <span class="n">action</span><span
+            class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TemplateName</span> <span class="o">=</span> <span
+            class="n">templatename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Operation</span> <span
+            class="o">=</span> <span class="n">action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_resources</span> <span
+            class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_resources</span> <span
+            class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="Action.add_input_resource"><a class="viewcode-back"
+                                                              href="../WorldSimulation.html#WorldSimulation.Action.add_input_resource">[docs]</a>    <span
+        class="k">def</span> <span class="nf">add_input_resource</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_resources</span><span
+            class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span
+            class="p">)</span></div>
+
+<div class="viewcode-block" id="Action.add_output_resource"><a class="viewcode-back"
+                                                               href="../WorldSimulation.html#WorldSimulation.Action.add_output_resource">[docs]</a>    <span
+        class="k">def</span> <span class="nf">add_output_resource</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_resources</span><span
+            class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resource</span><span
+            class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span
+            class="p">):</span>
+        <span class="c1"># resource_str= &#39;-&#39;.join(self.resources)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Action: </span><span
+            class="si">{</span><span class="bp">self</span><span class="o">.</span><span
+            class="n">TemplateName</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../WorldSimulation.html#WorldSimulation.Node">[docs]</a><span
+        class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span
+            class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">world</span><span
+            class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span
+            class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">world</span> <span class="o">=</span> <span
+            class="n">world</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_quality</span> <span
+            class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span
+            class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span
+            class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span
+            class="p">):</span>
+        <span class="c1"># resource_str= &#39;-&#39;.join(self.resources)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;children_cnt: </span><span
+            class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span
+            class="o">.</span><span class="n">children</span><span class="p">)</span><span class="si">}</span><span
+            class="s2">&quot;</span>
+
+<div class="viewcode-block" id="Node.get_first_child"><a class="viewcode-back"
+                                                         href="../WorldSimulation.html#WorldSimulation.Node.get_first_child">[docs]</a>    <span
+        class="k">def</span> <span class="nf">get_first_child</span><span class="p">(</span><span class="bp">self</span><span
+        class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: Return First Child with max state_quality</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">children</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">node</span><span
+            class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">sort</span><span
+            class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span
+            class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">state_quality</span><span
+            class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span
+            class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Node.calculate_schedule_probability"><a class="viewcode-back"
+                                                                        href="../WorldSimulation.html#WorldSimulation.Node.calculate_schedule_probability">[docs]</a>    <span
+        class="k">def</span> <span class="nf">calculate_schedule_probability</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: Schedule Probability sco:L / 1 + math.e ** (-K * (x - X_0))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">calculate_discounted_reward</span><span class="p">()</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">L</span> <span class="o">/</span> <span
+            class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span
+            class="n">e</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span
+            class="n">K</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span
+            class="o">-</span> <span class="n">X_0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span
+            class="n">score</span>
+        <span class="k">return</span> <span class="n">score</span></div>
+
+<div class="viewcode-block" id="Node.calculate_expected_utility"><a class="viewcode-back"
+                                                                    href="../WorldSimulation.html#WorldSimulation.Node.calculate_expected_utility">[docs]</a>    <span
+        class="k">def</span> <span class="nf">calculate_expected_utility</span><span class="p">(</span><span class="bp">self</span><span
+        class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         # calculate_expected_utility function implements the following:</span>
+<span class="sd">        # EU(c_i, s_j) = (P(s_j) * DR(c_i, s_j)) + ((1-P(s_j)) * C), where c_i = self</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">calculate_schedule_probability</span><span class="p">()</span>
+        <span class="n">DR</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">calculate_discounted_reward</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">P</span> <span class="o">*</span> <span
+            class="n">DR</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span
+            class="mi">1</span> <span class="o">-</span> <span class="n">P</span><span class="p">)</span> <span
+            class="o">*</span> <span class="n">C</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.get_children_count"><a class="viewcode-back"
+                                                            href="../WorldSimulation.html#WorldSimulation.Node.get_children_count">[docs]</a>    <span
+        class="k">def</span> <span class="nf">get_children_count</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">children</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">+</span> <span
+            class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span
+            class="n">children</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.get_state_quality"><a class="viewcode-back"
+                                                           href="../WorldSimulation.html#WorldSimulation.Node.get_state_quality">[docs]</a>    <span
+        class="k">def</span> <span class="nf">get_state_quality</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        state_quality Getter</span>
+<span class="sd">        :return: node.state_quality</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span
+            class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">state_quality</span></div>
+
+<div class="viewcode-block" id="Node.get_probability_score"><a class="viewcode-back"
+                                                               href="../WorldSimulation.html#WorldSimulation.Node.get_probability_score">[docs]</a>    <span
+        class="k">def</span> <span class="nf">get_probability_score</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Probablity_score Getter</span>
+<span class="sd">        :return: node.score</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span
+            class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">score</span></div>
+
+<div class="viewcode-block" id="Node.calculate_undiscounted_reward"><a class="viewcode-back"
+                                                                       href="../WorldSimulation.html#WorldSimulation.Node.calculate_undiscounted_reward">[docs]</a>    <span
+        class="k">def</span> <span class="nf">calculate_undiscounted_reward</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        # From the requirements, this function implements the following equation:</span>
+<span class="sd">        # R(c_i, s_j) = Q_end(c_i, s_j) – Q_start(c_i, s_j) to a country c_i of a schedule s_j.</span>
+<span class="sd">        :param :</span>
+<span class="sd">        :return: state_quality(node) - state_quality(start)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">sq1</span> <span class="o">=</span> <span class="p">(</span><span class="n">node</span><span
+            class="o">.</span><span class="n">get_first_child</span><span class="p">())</span><span
+            class="o">.</span><span class="n">get_state_quality</span><span class="p">()</span> <span
+            class="k">if</span> <span class="p">(</span><span class="n">node</span><span class="o">.</span><span
+            class="n">children</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">get_state_quality</span><span
+            class="p">()</span> <span class="o">-</span> <span class="n">sq1</span></div>
+
+<div class="viewcode-block" id="Node.calculate_discounted_reward"><a class="viewcode-back"
+                                                                     href="../WorldSimulation.html#WorldSimulation.Node.calculate_discounted_reward">[docs]</a>    <span
+        class="k">def</span> <span class="nf">calculate_discounted_reward</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate discounted_reward using following equation:</span>
+<span class="sd">        # DR(c_i, s_j) = gamma^N * (Q_end(c_i, s_j) – Q_start(c_i, s_j)), where 0 &lt;= gamma &lt; 1.</span>
+<span class="sd">        :return: (Gamma ** count) * node.calculate_undiscounted_reward()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">get_children_count</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">Gamma</span> <span
+            class="o">**</span> <span class="n">count</span><span class="p">)</span> <span class="o">*</span> <span
+            class="n">node</span><span class="o">.</span><span class="n">calculate_undiscounted_reward</span><span
+            class="p">()</span></div>
+
+<div class="viewcode-block" id="Node.generate_successor"><a class="viewcode-back"
+                                                            href="../WorldSimulation.html#WorldSimulation.Node.generate_successor">[docs]</a>    <span
+        class="k">def</span> <span class="nf">generate_successor</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">,</span> <span class="n">frontier</span><span class="p">,</span> <span
+        class="n">schedule_queue</span><span class="p">,</span> <span class="n">depth</span><span
+        class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Function that generates applies Action on Each Countries within Node.World to generate Successor Nodes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">children</span> <span
+            class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span
+            class="n">actions</span><span class="p">:</span>
+            <span class="n">world_successor</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">country_successor</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">country</span> <span class="ow">in</span> <span
+            class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verify_required_resources</span><span class="p">(</span><span
+            class="n">country</span><span class="p">,</span>
+                                             <span class="n">action</span><span class="p">):</span>  <span class="c1"># Verify Country has adaquate resources to apply Action template</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Applying Template:</span><span
+            class="si">{</span><span class="n">action</span><span class="p">[</span><span class="s1">&#39;TemplateName&#39;</span><span
+            class="p">]</span><span class="si">}</span><span class="s2"> for county:</span><span
+            class="si">{</span><span class="n">country</span><span class="p">[</span><span
+            class="s1">&#39;Country&#39;</span><span class="p">]</span><span class="si">}</span><span
+            class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">country_successor</span> <span class="o">=</span> <span
+            class="n">apply_template</span><span class="p">(</span><span class="n">country</span><span
+            class="p">,</span> <span class="n">action</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;county:</span><span class="si">{</span><span
+            class="n">country</span><span class="p">[</span><span class="s1">&#39;Country&#39;</span><span
+            class="p">]</span><span class="si">}</span><span
+            class="s2"> does not have sufficient resources for:</span><span class="si">{</span><span
+            class="n">action</span><span class="p">[</span><span class="s1">&#39;TemplateName&#39;</span><span
+            class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">world_successor</span><span class="o">.</span><span class="n">append</span><span
+            class="p">(</span><span class="n">country_successor</span><span class="p">)</span>
+                <span class="n">child</span> <span class="o">=</span> <span class="n">Node</span><span
+            class="p">(</span><span class="n">parent</span><span class="p">,</span> <span
+            class="n">world_successor</span><span class="p">)</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">calculate_state_quality</span><span
+            class="p">(</span><span class="n">resourceweights</span><span class="p">)</span>
+                <span class="n">child</span><span class="o">.</span><span
+            class="n">calculate_schedule_probability</span><span class="p">()</span>
+                <span class="n">schedule_str</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span><span
+            class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span><span
+            class="s1">&#39;Depth&#39;</span><span class="p">,</span> <span class="nb">str</span><span
+            class="p">(</span><span class="n">depth</span><span class="p">),</span> <span class="s1">&#39;State_Q:uality&#39;</span><span
+            class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span
+            class="p">(</span><span class="n">child</span><span class="o">.</span><span
+            class="n">get_state_quality</span><span class="p">())),</span> <span
+            class="s1">&#39;Template&#39;</span><span class="p">,</span> <span class="n">action</span><span
+            class="p">[</span><span class="s1">&#39;TemplateName&#39;</span><span class="p">]])</span>
+  <span class="c1">#                  [&#39;Depth&#39;, str(depth), &#39;State_quality&#39;, str(round(child.state_quality)), &#39;Template&#39;, action[&#39;TemplateName&#39;]])</span>
+                <span class="n">parent_str</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span><span
+            class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span
+            class="si">{}</span><span class="s1"> : </span><span class="si">{}</span><span class="s1">&#39;</span><span
+            class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span
+            class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span
+            class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span
+            class="n">country</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                <span class="n">child_str</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span><span
+            class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span
+            class="si">{}</span><span class="s1"> : </span><span class="si">{}</span><span class="s1">&#39;</span><span
+            class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span
+            class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span
+            class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span
+            class="n">country_successor</span><span class="o">.</span><span class="n">items</span><span
+            class="p">())</span>
+                <span class="n">schedule_str</span> <span class="o">+=</span> <span class="s1">&#39;:&#39;</span><span
+            class="o">.</span><span class="n">join</span><span class="p">([</span><span
+            class="s1">&#39; Parent&#39;</span><span class="p">,</span> <span class="n">parent_str</span><span
+            class="p">,</span> <span class="s1">&#39; Child&#39;</span><span class="p">,</span> <span class="n">child_str</span><span
+            class="p">])</span>
+                <span class="c1">#    schedule_str+= &#39;:&#39;.join()</span>
+                <span class="n">schedule_queue</span><span class="o">.</span><span class="n">put</span><span
+            class="p">(</span><span class="n">schedule_str</span><span class="p">,</span> <span
+            class="n">child</span><span class="p">)</span>
+                <span class="c1"># schedule_queue.put(schedule_str, child)</span>
+                <span class="n">frontier</span><span class="o">.</span><span class="n">put</span><span
+            class="p">((</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span
+            class="n">child</span><span class="o">.</span><span class="n">state_quality</span><span
+            class="p">,</span> <span class="n">child</span><span class="p">))</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">children</span><span
+            class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span
+            class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.calculate_state_quality"><a class="viewcode-back"
+                                                                 href="../WorldSimulation.html#WorldSimulation.Node.calculate_state_quality">[docs]</a>    <span
+        class="k">def</span> <span class="nf">calculate_state_quality</span><span class="p">(</span><span class="bp">self</span><span
+        class="p">,</span> <span class="n">resourceweights</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            # Function to calculate Node State Quality</span>
+<span class="sd">            :param</span>
+<span class="sd">            Input: Node object</span>
+<span class="sd">            Input: resourceweights: Map object containing Resource Weight definition</span>
+<span class="sd">            # Part1 State quality function uses static Weights associated per resource type</span>
+<span class="sd">            # For Part , intend to enhance weights using country specific methodology</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state_quality</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">country</span> <span class="ow">in</span> <span
+            class="bp">self</span><span class="o">.</span><span class="n">world</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">resource</span><span class="p">,</span> <span
+            class="n">amount</span> <span class="ow">in</span> <span class="n">country</span><span
+            class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">resourceweights</span><span class="o">.</span><span class="n">get</span><span
+            class="p">(</span><span class="n">resource</span><span class="p">)</span> <span class="ow">is</span> <span
+            class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">state_quality</span> <span class="o">+=</span> <span class="n">country</span><span
+            class="p">[</span><span class="n">resource</span><span class="p">]</span> <span class="o">*</span> <span
+            class="n">resourceweights</span><span class="p">[</span><span class="n">resource</span><span
+            class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">continue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_quality</span> <span
+            class="o">=</span> <span class="n">state_quality</span></div></div>
+
+
+<div class="viewcode-block" id="apply_template"><a class="viewcode-back"
+                                                   href="../WorldSimulation.html#WorldSimulation.apply_template">[docs]</a><span
+        class="k">def</span> <span class="nf">apply_template</span><span class="p">(</span><span
+        class="n">country</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to apply action template on a country object</span>
+<span class="sd">    Country Resources are reduced as per Template Input Resource definition</span>
+<span class="sd">    Country Resources are added as per Template Out Resource defination</span>
+<span class="sd">    Additional Country Resources are created for non existing Template Out resources</span>
+<span class="sd">    :param country:</span>
+<span class="sd">    :param action:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">country_successor</span> <span class="o">=</span> <span class="n">deepcopy</span><span
+            class="p">(</span><span class="n">country</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span
+            class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">items</span><span
+            class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span
+            class="n">startswith</span><span class="p">(</span><span class="s1">&#39;IN_&#39;</span><span
+            class="p">)</span> <span class="ow">and</span> <span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span
+            class="p">:</span>
+            <span class="n">country_key</span> <span class="o">=</span> <span class="n">key</span><span
+            class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span
+            class="s1">&#39;IN_&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">country_successor</span><span
+            class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">country_key</span><span
+            class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span
+            class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">action</span><span
+            class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;=</span> <span
+            class="n">country_successor</span><span class="p">[</span><span class="n">country_key</span><span class="p">]):</span>
+                <span class="n">country_successor</span><span class="p">[</span><span class="n">country_key</span><span
+            class="p">]</span> <span class="o">-=</span> <span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span><span class="o">.</span><span
+            class="n">startswith</span><span class="p">(</span><span class="s1">&#39;OUT_&#39;</span><span
+            class="p">)</span> <span class="ow">and</span> <span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span
+            class="p">:</span>
+            <span class="n">country_key</span> <span class="o">=</span> <span class="n">key</span><span
+            class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span
+            class="s1">&#39;OUT_&#39;</span><span class="p">)</span>
+            <span class="n">country_successor</span><span class="p">[</span><span class="n">country_key</span><span
+            class="p">]</span> <span class="o">+=</span> <span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span> <span class="k">if</span> <span
+            class="n">country_successor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span
+            class="n">country_key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span
+            class="kc">None</span> <span class="k">else</span> \
+                <span class="n">action</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="n">country_successor</span></div>
+
+
+<span class="c1"># from the requirements, uses the logistic function:</span>
+<span class="c1"># https://en.wikipedia.org/wiki/Logistic_function</span>
+<div class="viewcode-block" id="calculate_schedule_probability"><a class="viewcode-back"
+                                                                   href="../WorldSimulation.html#WorldSimulation.calculate_schedule_probability">[docs]</a><span
+        class="k">def</span> <span class="nf">calculate_schedule_probability</span><span class="p">(</span><span
+        class="n">node</span><span class="p">):</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span
+            class="n">calculate_discounted_reward</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">L</span> <span class="o">/</span> <span class="mi">1</span> <span
+            class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">e</span> <span
+            class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">K</span> <span
+            class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span
+            class="n">X_0</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="print_schedule"><a class="viewcode-back"
+                                                   href="../WorldSimulation.html#WorldSimulation.print_schedule">[docs]</a><span
+        class="k">def</span> <span class="nf">print_schedule</span><span class="p">(</span><span
+        class="n">schedulequeue</span><span class="p">,</span> <span class="n">output_schedule_filename</span><span
+        class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to print Schedules to an output file</span>
+<span class="sd">    :param schedulequeue:</span>
+<span class="sd">    :param output_schedule_filename:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Printing Schedules to Output file: </span><span
+            class="si">{</span><span class="n">output_schedule_filename</span><span class="si">}</span><span class="s2"> &quot;</span><span
+            class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_schedule_filename</span><span
+            class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span
+            class="k">as</span> <span class="n">external_file</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Printing Schedule&quot;</span><span
+            class="p">,</span> <span class="n">file</span><span class="o">=</span><span
+            class="n">external_file</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">schedulequeue</span><span
+            class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">next_item</span> <span class="o">=</span> <span class="n">schedulequeue</span><span
+            class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">next_item</span><span
+            class="p">,</span> <span class="n">file</span><span class="o">=</span><span
+            class="n">external_file</span><span class="p">)</span>
+    <span class="n">external_file</span><span class="o">.</span><span class="n">close</span><span
+            class="p">()</span></div>
+
+
+<span class="c1"># Load World - Country Resources from Input file</span>
+<div class="viewcode-block" id="load_initial_state"><a class="viewcode-back"
+                                                       href="../WorldSimulation.html#WorldSimulation.load_initial_state">[docs]</a><span
+        class="k">def</span> <span class="nf">load_initial_state</span><span class="p">(</span><span class="n">country_resource_filename</span><span
+        class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to load initial World Resource state from an input CSV file</span>
+<span class="sd">    Panda dataframe is used to read CSV file for creating Country objects</span>
+<span class="sd">    :param country_resource_filename:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">world</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span
+            class="p">(</span><span class="n">country_resource_filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span
+            class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span
+            class="p">)):</span>
+        <span class="n">country</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span
+            class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span
+            class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+            <span class="n">country</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span
+            class="n">columns</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span
+            class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span
+            class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span
+            class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">country</span><span class="p">)</span>
+        <span class="n">world</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span
+            class="n">country</span><span class="p">)</span>
+    <span class="c1"># df = pd.read_csv(initial_state_file_name)</span>
+    <span class="c1"># country[df]</span>
+    <span class="k">return</span> <span class="n">world</span></div>
+
+
+<div class="viewcode-block" id="load_resource_weights"><a class="viewcode-back"
+                                                          href="../WorldSimulation.html#WorldSimulation.load_resource_weights">[docs]</a><span
+        class="k">def</span> <span class="nf">load_resource_weights</span><span class="p">(</span><span class="n">resource_filename</span><span
+        class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to populate resourceweights map of Resource Weights from an input CSV file</span>
+<span class="sd">    :param resource_filename:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span
+            class="p">(</span><span class="n">resource_filename</span><span class="p">)</span>
+    <span class="c1"># print (df.columns.tolist())</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span
+            class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span
+            class="p">)):</span>
+        <span class="n">resourceweights</span><span class="p">[</span><span class="n">df</span><span
+            class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span
+            class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span
+            class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span
+            class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">resourceweights</span></div>
+
+
+<div class="viewcode-block" id="load_templates"><a class="viewcode-back"
+                                                   href="../WorldSimulation.html#WorldSimulation.load_templates">[docs]</a><span
+        class="k">def</span> <span class="nf">load_templates</span><span class="p">(</span><span class="n">template_filename</span><span
+        class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Function to populate actions list  of Action Templates from an input CSV file</span>
+<span class="sd">     Actions object consists of Action[Transform/Transfer], TemplateName, Input Resources : Resources required as Inputs</span>
+<span class="sd">     and Output Resources: Resources generated as a Byproduct</span>
+<span class="sd">     Panda DataFrame is used to Read CSV file and populate Action dictionary object</span>
+<span class="sd">    :param template_filename:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span
+            class="p">(</span><span class="n">template_filename</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span
+            class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span
+            class="p">)):</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span
+            class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span
+            class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+            <span class="n">template</span><span class="p">[</span><span class="n">df</span><span
+            class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">j</span><span
+            class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span
+            class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span
+            class="n">j</span><span class="p">]</span>
+        <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span
+            class="n">template</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">actions</span></div>
+
+
+<div class="viewcode-block" id="verify_required_resources"><a class="viewcode-back"
+                                                              href="../WorldSimulation.html#WorldSimulation.verify_required_resources">[docs]</a><span
+        class="k">def</span> <span class="nf">verify_required_resources</span><span class="p">(</span><span class="n">country</span><span
+        class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span
+            class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">items</span><span
+            class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span
+            class="n">startswith</span><span class="p">(</span><span class="s1">&#39;IN_&#39;</span><span
+            class="p">)</span> <span class="ow">and</span> <span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span
+            class="p">:</span>
+            <span class="n">country_key</span> <span class="o">=</span> <span class="n">key</span><span
+            class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span
+            class="s1">&#39;IN_&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">country</span><span
+            class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">country_key</span><span
+            class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span
+            class="ow">or</span> <span class="p">(</span><span class="n">action</span><span class="p">[</span><span
+            class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">country</span><span
+            class="p">[</span><span class="n">country_key</span><span class="p">]):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Country: </span><span
+            class="si">{</span><span class="n">country</span><span class="p">[</span><span
+            class="s1">&#39;Country&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Resource :</span><span
+            class="si">{</span><span class="n">country_key</span><span class="si">}</span><span class="s2"> failed resource check&quot;</span><span
+            class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="my_country_scheduler"><a class="viewcode-back"
+                                                         href="../WorldSimulation.html#WorldSimulation.my_country_scheduler">[docs]</a><span
+        class="k">def</span> <span class="nf">my_country_scheduler</span><span class="p">(</span><span class="n">my_country_name</span><span
+        class="p">,</span> <span class="n">resource_weight_filename</span><span class="p">,</span> <span class="n">country_resources_filename</span><span
+        class="p">,</span>
+                         <span class="n">action_template_filename</span><span class="p">,</span>
+                         <span class="n">output_schedule_filename</span><span class="p">,</span> <span class="n">num_output_schedules</span><span
+            class="p">,</span> <span class="n">depth_bound</span><span class="p">,</span> <span class="n">frontier_max_size</span><span
+            class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    u</span>
+<span class="sd">    :param my_country_name:  My Country</span>
+<span class="sd">    :param resource_weight_filename: Input CSV file for Resource Weights</span>
+<span class="sd">    :param country_resources_filename:  Input CSV File for World Countries Resource definition</span>
+<span class="sd">    :param action_template_filename: Input CVS file for Templates</span>
+<span class="sd">    :param output_schedule_filename: Output CSV file for generated Schedules</span>
+<span class="sd">    :param num_output_schedules:  Threshold for Output_schedules</span>
+<span class="sd">    :param depth_bound:  Threshold for Schedule Depth</span>
+<span class="sd">    :param frontier_max_size: Threshold for Frontier size</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">world</span> <span class="o">=</span> <span class="n">load_initial_state</span><span
+            class="p">(</span><span class="n">country_resources_filename</span><span class="p">)</span>
+    <span class="n">resourceweights</span> <span class="o">=</span> <span class="n">load_resource_weights</span><span
+            class="p">(</span><span class="n">resource_weight_filename</span><span class="p">)</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="n">load_templates</span><span
+            class="p">(</span><span class="n">action_template_filename</span><span class="p">)</span>
+    <span class="n">frontier</span> <span class="o">=</span> <span class="n">PriorityQueue</span><span
+            class="p">()</span>
+    <span class="n">schedule_queue</span> <span class="o">=</span> <span class="n">PriorityQueue</span><span class="p">()</span>
+    <span class="n">current_depth</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">root_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span
+            class="kc">None</span><span class="p">,</span> <span class="n">world</span><span class="p">)</span>
+    <span class="n">root_node</span><span class="o">.</span><span class="n">calculate_state_quality</span><span
+            class="p">(</span><span class="n">resourceweights</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">root_node</span><span class="o">.</span><span
+            class="n">calculate_schedule_probability</span><span class="p">()</span>
+    <span class="n">frontier</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span
+            class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">score</span><span
+            class="p">,</span> <span class="n">root_node</span><span class="p">))</span>
+
+    <span class="n">schedule_str</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span><span
+            class="o">.</span><span class="n">join</span><span class="p">([</span><span
+            class="s1">&#39;Depth&#39;</span><span class="p">,</span> <span class="nb">str</span><span
+            class="p">(</span><span class="n">current_depth</span><span class="p">),</span> <span class="s1">&#39;Probability_score&#39;</span><span
+            class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">root_node</span><span
+            class="o">.</span><span class="n">get_probability_score</span><span class="p">()),</span> <span class="s1">&#39;ROOT Node&#39;</span><span
+            class="p">])</span>
+    <span class="n">schedule_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span
+            class="n">schedule_str</span><span class="p">,</span> <span class="n">root_node</span><span
+            class="p">)</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">frontier</span><span
+            class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">and</span> <span
+            class="n">current_depth</span> <span class="o">&lt;=</span> <span class="n">depth_bound</span><span
+            class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">frontier</span><span
+            class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="mi">1</span><span
+            class="p">]</span>
+        <span class="n">current_depth</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">generate_successor</span><span
+            class="p">(</span><span class="n">frontier</span><span class="p">,</span> <span
+            class="n">schedule_queue</span><span class="p">,</span> <span class="n">current_depth</span><span class="p">,</span> <span
+            class="n">actions</span><span class="p">)</span>
+
+    <span class="n">print_schedule</span><span class="p">(</span><span class="n">schedule_queue</span><span
+            class="p">,</span> <span class="n">output_schedule_filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../WorldSimulation.html#WorldSimulation.main">[docs]</a><span
+        class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">my_country_scheduler</span><span class="p">(</span><span class="s1">&#39;Atlantis&#39;</span><span
+            class="p">,</span> <span class="sa">r</span><span class="s1">&#39;resourcedefination.csv&#39;</span><span
+            class="p">,</span>
+                         <span class="sa">r</span><span class="s1">&#39;initialcountry.csv&#39;</span><span
+            class="p">,</span>
+                         <span class="sa">r</span><span class="s1">&#39;TransformTemplates.csv&#39;</span><span
+            class="p">,</span>
+                         <span class="sa">r</span><span class="s1">&#39;Schedule_results.txt&#39;</span><span class="p">,</span> <span
+            class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span
+            class="mi">500</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span
+                        class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div aria-label="main navigation" class="sphinxsidebar" role="navigation">
+        <div class="sphinxsidebarwrapper">
+            <h1 class="logo"><a href="../index.html">CS5260ProjPart1</a></h1>
+
+
+            <h3>Navigation</h3>
+            <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+            <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../WorldSimulation.html">WorldSimulation
+                    module</a></li>
+            </ul>
+
+            <div class="relations">
+                <h3>Related Topics</h3>
+                <ul>
+                    <li><a href="../index.html">Documentation overview</a>
+                        <ul>
+                            <li><a href="index.html">Module code</a>
+                                <ul>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div id="searchbox" role="search" style="display: none">
+                <h3 id="searchlabel">Quick search</h3>
+                <div class="searchformwrapper">
+                    <form action="../search.html" class="search" method="get">
+                        <input aria-labelledby="searchlabel" autocapitalize="off" autocomplete="off" autocorrect="off"
+                               name="q" spellcheck="false" type="text"/>
+                        <input type="submit" value="Go"/>
+                    </form>
+                </div>
+            </div>
+            <script>$('#searchbox').show(0);</script>
+
+
+        </div>
+    </div>
+    <div class="clearer"></div>
+</div>
+<div class="footer">
+    &copy;2022, Hiren Vadalia.
+
+    |
+    Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+    &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+
+</div>
+
+
+</body>
+</html>
